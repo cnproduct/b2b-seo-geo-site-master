@@ -1,0 +1,19 @@
+{
+  "name": "b2b-seo-geo-site-master",
+  "version": "3.0.0",
+  "description": "面向海外询盘获取（RFQ）的 B2B 独立站 SEO + GEO 全链路建站与增长总控：融合 21 行业采购蓝图、21 模块事实底座、商业意图词根扩树、GEO 高可引用工程块、三级询盘转化漏斗、7 态外链台账与默认 Cloudflare 边缘防护。",
+  "author": "cnproduct",
+  "license": "MIT",
+  "entry": "scripts/orchestrator.py",
+  "tools": [
+    "orchestrator.py",
+    "sitekit.py",
+    "seo_geo_matrix.py",
+    "extract_brand_dna.py",
+    "site_compiler.py",
+    "validate_site.py",
+    "design_math.py",
+    "rfq_daemon.py"
+  ],
+  "standards_checked_at": "2026-10-16"
+}
