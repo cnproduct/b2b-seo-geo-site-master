@@ -1,4 +1,4 @@
 interface:
-  display_name: "B2B 独立站 SEO+GEO 询盘获客总控 V3.1"
-  short_description: "融合十大开源技能的 B2B 独立站精华：词根扩树、主题聚类、134-167词 GEO 评分、21行业采购蓝图与三级 RFQ 漏斗"
-  default_prompt: "使用 $b2b-seo-geo-site-master，根据我的公司资料与核心产品，构建B2B商业意图词根树、Hub-and-Spoke工程选型聚类、21模块事实底座、符合134-167词GEO直答标准的B2B独立站页面、三级RFQ询盘漏斗与边缘防护发布包，并输出完整验收报告。"
+  display_name: "B2B 独立站 SEO+GEO 询盘获客总控 V3.2"
+  short_description: "四阶段 docs/seo/ 唯一事实源中枢 + 十大开源技能融合：词根矩阵、主题聚类、B2B CRO 风险逆转、134-167词 GEO 评分与三级 RFQ 漏斗"
+  default_prompt: "使用 $b2b-seo-geo-site-master，根据我的公司资料与核心产品，一键初始化 docs/seo/ 唯一事实源中枢与 .claude/CLAUDE.md 路由协议，完成 Phase 1 选词立项、Phase 2 高转化 B2B 着陆页与三级风险逆转询盘漏斗、Phase 3 代码级 SEO/GEO 与多语言 hreflang 武装、Phase 4 上线前九道硬闸门验收。"
