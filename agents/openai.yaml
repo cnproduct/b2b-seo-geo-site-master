@@ -1,4 +1,4 @@
 interface:
-  display_name: "B2B 独立站 SEO+GEO 询盘获客总控 V3.0"
-  short_description: "融合七段 SEO/GEO 生命周期、商业词根扩树、21行业采购蓝图、三级 RFQ 转化漏斗与边缘防护"
-  default_prompt: "使用 $b2b-seo-geo-site-master，根据我的公司资料与核心产品，构建B2B商业意图词根树、21模块事实底座、高可引用GEO产品与选型页面、三级RFQ询盘转化通道与边缘防护发布包，并输出完整验收报告。"
+  display_name: "B2B 独立站 SEO+GEO 询盘获客总控 V3.1"
+  short_description: "融合十大开源技能的 B2B 独立站精华：词根扩树、主题聚类、134-167词 GEO 评分、21行业采购蓝图与三级 RFQ 漏斗"
+  default_prompt: "使用 $b2b-seo-geo-site-master，根据我的公司资料与核心产品，构建B2B商业意图词根树、Hub-and-Spoke工程选型聚类、21模块事实底座、符合134-167词GEO直答标准的B2B独立站页面、三级RFQ询盘漏斗与边缘防护发布包，并输出完整验收报告。"
