@@ -1,7 +1,7 @@
 {
   "name": "b2b-seo-geo-site-master",
-  "version": "3.4.0",
-  "description": "面向海外询盘获取（RFQ）的 B2B 独立站 SEO + GEO 全链路建站与增长总控（14大技能 + 四阶段 docs/seo/ 唯一事实源中枢版）：涵盖首屏零门槛交互式选型/装柜工作台、反 AI 塑料感六大铁律与 design-tokens.css、B2bJsonLd.tsx 结构化数据组件、上线前 10 项 SEO+视觉双重审计清单、21 行业采购蓝图、4 大工业视觉原型、21 模块事实底座、SKU 目录批量审计与 7 态外链台账。",
+  "version": "4.0.0",
+  "description": "面向海外询盘获取（RFQ）的 B2B 独立站 SEO + GEO 全链路建站与增长总控（V4.0 深度融合版）：将 cnproduct/b2b-global-brand-site-master 的 12 大工程子系统（M0/M1/M2 资料成熟度、RenWork V4 七态 21 模块事实门禁、21 行业 9 字段采购蓝图、21 字段数字资产防伪台账、4 种 data-layout 采购版式、10 类页面模板、双模 RFQ 与 rfq_daemon、Cloudflare Workers 边缘防护包、Logo 栅格取色与 WCAG 对比度数学守卫、中日韩/拉丁/RTL 跨语言排版、去标识化经验沉淀）与 13 大 SEO/GEO/CRO/UI 开源技能完全打通。",
   "author": "cnproduct",
   "license": "MIT",
   "entry": "scripts/orchestrator.py",
@@ -13,7 +13,8 @@
     "site_compiler.py",
     "validate_site.py",
     "design_math.py",
-    "rfq_daemon.py"
+    "rfq_daemon.py",
+    "record_learning.py"
   ],
   "standards_checked_at": "2026-10-18"
 }
