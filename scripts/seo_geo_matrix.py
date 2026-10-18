@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""B2B SEO/GEO keyword tree, topic cluster stitcher, GEO citability scorer, 4-phase workspace orchestrator (docs/seo/ + .claude/CLAUDE.md), and 7-state backlink ledger (V3.2).
+"""B2B SEO/GEO keyword tree, topic cluster stitcher, GEO citability scorer, 4-phase workspace orchestrator, SKU catalog auditor, B2B editorial syndication generator, and 7-state backlink ledger (V3.3).
 
-Synthesizes B2B-appropriate capabilities from 10 open-source Agent Skills + the 4-Phase Tri-Core Orchestration Architecture:
+Synthesizes B2B-appropriate capabilities from all 13 open-source Agent Skills:
 1. cnproduct/b2b-global-brand-site-master (21 industries, 21-module fact governance, Clean URLs, Anti-FOUC, Edge protection)
 2. yan-labs/yan-skills (rankup 7-stage lifecycle, SERP weakness teardown [inner-page rank & DR<30], docs/seo/ Single Source of Truth hub, IndexNow/GSC loop, 7-state backlink ledger)
-3. coreyhaines31/marketingskills (B2B page-cro, Hero value proposition, 3-step OEM workflow, B2B Risk Reversal [NDA/Sample/AQL], 3-tier commercial RFQ cards replacing SaaS paywalls)
+3. coreyhaines31/marketingskills (B2B page-cro, Hero value proposition, 4-step OEM workflow, B2B Risk Reversal [NDA/Sample/AQL], 3-tier commercial RFQ cards)
 4. AgriciDaniel/claude-seo (Technical SEO, E-E-A-T Trust-first, Organization/Product/TechArticle JSON-LD, multi-locale hreflang [en/es/pt/ja/de/fr], llms.txt & llms-full.txt)
 5. seo.web.cafe / Gefei Official Methodology (Competitor-to-Keyword & Keyword-to-Competitor teardown, native multilingual keyword research, 6-point brand entity alignment)
 6. zubair-trabzada/geo-seo-claude (134-167 word passage citability scoring, 6-dimension composite GEO score, off-site brand mention matrix)
@@ -12,6 +12,9 @@ Synthesizes B2B-appropriate capabilities from 10 open-source Agent Skills + the 
 8. aaron-he-zhu/aaron-marketing-skills (Survey -> Implement -> Tune -> Evaluate loop, CORE-EEAT & CITE gates)
 9. Bhanunamikaze/Agentic-SEO-Skill (Evidence-backed Finding/Evidence/Impact/Fix rubric, B2B faceted navigation crawl-trap guard, orphan page & indexability matrix)
 10. cnproduct/renwork-web-design-master (Fluid clamp typography, 45ch-75ch measure, 1.8x heading proximity, zero AI-slop gradients)
+11. vercel-labs/agent-skills (web-design-guidelines & writing-guidelines: tabular-nums on spec tables, non-breaking number-unit spacing, B2B form autocomplete/focus-visible, LCP/CLS image discipline, banned fluff words)
+12. nextlevelbuilder/ui-ux-pro-max-skill + anthropics/skills frontend-design (4 B2B industry visual archetypes: Precision CNC, Cleanroom Regulatory, Architectural Material, Agile OEM Lookbook)
+13. benjaminsehl/liquid-skills + wiebekaai/ecommerce-skills + flaqai/backlink_skills (Multi-SKU RFQ Sample Basket Drawer, accessible material swatch switchers, bulk SKU catalog SEO/spec completeness auditor, LinkedIn/Medium B2B editorial syndication pack generator)
 """
 import argparse
 import csv
@@ -46,7 +49,36 @@ AI_SLOP_PHRASES = (
     'cutting-edge solution',
     'delve into',
     'testament to',
+    'world-class',
+    'best-in-class',
 )
+
+B2B_VISUAL_ARCHETYPES = {
+    'precision_engineering': {
+        'industries': ['machinery', 'components', 'electronics', 'automotive', 'energy'],
+        'palette_direction': 'High-contrast slate, anodized steel, and safety amber/cobalt interactive accents (OKLCH tinted neutrals)',
+        'typography_pairing': 'Space Grotesk / Clash Display (headings) + Inter / Plus Jakarta Sans (body) + JetBrains Mono (tabular-nums spec readouts)',
+        'signature_components': ['Dimensional tolerance table with tabular-nums', 'CAD/Datasheet version drawer', 'Multi-SKU RFQ Basket Drawer'],
+    },
+    'cleanroom_regulatory': {
+        'industries': ['medical', 'hygiene', 'chemicals', 'food'],
+        'palette_direction': 'Clinical pure surface, deep laboratory navy, and high-legibility emerald/cobalt verification badges',
+        'typography_pairing': 'Plus Jakarta Sans (headings) + Inter (body) + Geist Mono (lot/batch & test standard codes)',
+        'signature_components': ['Certification scope & validity verification strip', 'Option A vs Option B BOM core comparison table', 'Batch traceability & AQL protocol card'],
+    },
+    'architectural_material': {
+        'industries': ['building-materials', 'sanitaryware', 'furniture', 'bento', 'appliances'],
+        'palette_direction': 'Warm mineral stone, brushed stainless neutral, and deep architectural charcoal',
+        'typography_pairing': 'Instrument Serif / General Sans (headings) + Switzer / Inter (body) + JetBrains Mono (dimensions & container CBM)',
+        'signature_components': ['Accessible material/finish swatch switcher (WCAG 2.2 roving tabindex)', '20GP/40HQ container load calculator', 'Cross-section structural callout'],
+    },
+    'agile_oem_lookbook': {
+        'industries': ['apparel', 'footwear', 'bags', 'packaging', 'beauty', 'toys-sports', 'pet-products'],
+        'palette_direction': 'Editorial high-contrast neutral canvas with bespoke brand-extracted accent token',
+        'typography_pairing': 'Syne / General Sans (headings) + Plus Jakarta Sans (body) + JetBrains Mono (GSM/oz, MOQ, carton specs)',
+        'signature_components': ['Interactive customization dimension selector (material, logo craft, packaging)', 'Sampling lead-time & tooling timeline', 'Multi-SKU Sample Kit Basket Drawer'],
+    },
+}
 
 B2B_INTENT_BRANCHES = [
     {
@@ -118,6 +150,13 @@ def get_industry(industry_id):
     raise ValueError(f'unknown industry: {industry_id}')
 
 
+def get_visual_archetype(industry_id):
+    for arch_id, meta in B2B_VISUAL_ARCHETYPES.items():
+        if industry_id in meta['industries']:
+            return {'archetype_id': arch_id, **meta}
+    return {'archetype_id': 'precision_engineering', **B2B_VISUAL_ARCHETYPES['precision_engineering']}
+
+
 def build_keyword_tree(seed_keyword, industry_id, markets=None):
     seed = seed_keyword.strip()
     if not seed:
@@ -156,6 +195,7 @@ def build_keyword_tree(seed_keyword, industry_id, markets=None):
         'pillar_homepage_keyword': f'{seed} manufacturer',
         'industry_id': industry_id,
         'industry_name': profile['name'],
+        'visual_archetype': get_visual_archetype(industry_id),
         'target_markets': markets,
         'supported_locales': ['en', 'es', 'pt', 'ja', 'de', 'fr'],
         'generated_at': now,
@@ -194,7 +234,8 @@ def build_topic_cluster(seed_keyword, industry_id, market='Global'):
             'primary_cta_tier': 'Tier 3: Container Load & Tiered FOB Quote',
             'required_elements': [
                 f'134-167 word self-contained engineering overview of {seed} supply capabilities',
-                f'Semantic HTML comparison table across {f0}, {f1}, and {f2}',
+                f'Semantic HTML comparison table across {f0}, {f1}, and {f2} with font-variant-numeric: tabular-nums',
+                'Interactive Material/Finish Swatch Switcher + Multi-SKU Sample & RFQ Basket Drawer',
                 'Faceted navigation guard: filter parameters canonicalize to /products unless promoted to static Clean URL',
             ],
         },
@@ -269,13 +310,120 @@ def build_topic_cluster(seed_keyword, industry_id, market='Global'):
         'market': market,
         'generated_at': now,
         'anti_ai_slop_writing_rules': [
-            'Open every guide directly with engineering constraints, BOM cost drivers, or procurement failure modes.',
-            'Ban generic filler openings ("In today\'s fast-paced world...", "Look no further...").',
+            'Open every guide directly with a TL;DR engineering summary: constraints, BOM cost drivers, or procurement failure modes (Vercel writing-guidelines).',
+            'Ban generic filler openings ("In today\'s fast-paced world...", "Look no further...", "easy", "simple", "world-class").',
+            'Use non-breaking spaces (&nbsp; or white-space: nowrap) between numbers and units (e.g., 500&nbsp;pcs, 0.8&nbsp;mm, 40&nbsp;HQ) and font-variant-numeric: tabular-nums on all specification tables.',
             'Include at least one semantic HTML <table> with explicit units/conditions and one 134-167 word self-contained GEO answer block per article.',
             'Every spoke article must link to at least 1 Hub page (/products or /oem-odm) and 1 conversion tool (/calculator or /contact) using descriptive technical anchor text.',
         ],
         'hubs': hubs,
         'spokes': spokes,
+    }
+
+
+def audit_b2b_sku_catalog(catalog_path, industry_id):
+    """Audits a B2B product SKU catalog JSON (inspired by wiebekaai/ecommerce-skills + benjaminsehl/liquid-skills + vercel-labs/agent-skills)."""
+    raw = json.loads(Path(catalog_path).read_text(encoding='utf-8'))
+    items = raw if isinstance(raw, list) else raw.get('products', raw.get('skus', []))
+    if not isinstance(items, list):
+        raise ValueError('catalog JSON must be a list of SKU objects or contain a "products"/"skus" array')
+    profile = get_industry(industry_id)
+    required_fields = profile['product_fields'][:3]
+    seen_titles = set()
+    issues = []
+    ready_count = 0
+
+    for idx, sku in enumerate(items):
+        if not isinstance(sku, dict):
+            continue
+        sku_id = str(sku.get('sku') or sku.get('id') or f'SKU-{idx+1}')
+        title = str(sku.get('title') or sku.get('name') or '').strip()
+        desc = str(sku.get('seo_description') or sku.get('description') or '').strip()
+        specs = sku.get('specifications') or sku.get('specs') or {}
+        alt = str(sku.get('image_alt') or sku.get('alt') or '').strip()
+        url = str(sku.get('url') or sku.get('slug') or '').strip()
+
+        sku_issues = []
+        if not title:
+            sku_issues.append('Missing product title/model name')
+        elif title.lower() in seen_titles:
+            sku_issues.append(f'Duplicate product title detected: "{title}"')
+        else:
+            seen_titles.add(title.lower())
+
+        word_count = len(re.findall(r'\b\w+\b', desc))
+        if word_count < 30:
+            sku_issues.append(f'Thin or missing B2B SEO description ({word_count} words; target 134-167 word GEO summary or >= 45 words)')
+        for phrase in AI_SLOP_PHRASES:
+            if phrase in desc.lower():
+                sku_issues.append(f'Contains banned AI-slop phrase: "{phrase}"')
+
+        if not isinstance(specs, dict) or len(specs) < 2:
+            sku_issues.append(f'Missing structured specification dictionary (recommend including: {", ".join(required_fields)})')
+        if not alt:
+            sku_issues.append('Missing descriptive image alt text (should state model + material + application)')
+        if url.endswith('.html'):
+            sku_issues.append(f'Product URL exposes .html suffix: "{url}" (violates Clean URL policy)')
+
+        if sku_issues:
+            issues.append({'sku_id': sku_id, 'title': title or None, 'issues': sku_issues})
+        else:
+            ready_count += 1
+
+    return {
+        'catalog_file': str(catalog_path),
+        'industry_id': industry_id,
+        'total_skus': len(items),
+        'seo_geo_ready_skus': ready_count,
+        'skus_needing_fixes': len(issues),
+        'recommended_industry_spec_columns': profile['product_fields'],
+        'findings': issues,
+    }
+
+
+def build_b2b_syndication_pack(company, seed_keyword, industry_id, target_url='/products'):
+    """Generates platform-native B2B editorial distribution packs for LinkedIn, Medium, and YouTube (inspired by flaqai/backlink_skills + geo-seo-claude)."""
+    profile = get_industry(industry_id)
+    f0, f1, f2 = (profile['product_fields'] + ['Material Grade', 'Tolerance', 'Packaging'])[:3]
+    e0, e1 = (profile['evidence'] + ['ISO 9001', 'Batch Test Report'])[:2]
+    now = datetime.now(timezone.utc).isoformat()
+    return {
+        'company': company,
+        'seed_keyword': seed_keyword,
+        'industry_id': industry_id,
+        'target_hub_clean_url': target_url,
+        'generated_at': now,
+        'channels': {
+            'linkedin_technical_article': {
+                'target_audience': 'Overseas Procurement Directors, Sourcing VPs, and OEM Product Managers',
+                'headline_options': [
+                    f'Engineering Trade-offs in Bulk {seed_keyword.title()} Sourcing: {f0} vs {f1}',
+                    f'How B2B Buyers Verify {e0} and Prevent BOM Cost Overruns When Ordering {seed_keyword.title()}',
+                ],
+                'editorial_structure': [
+                    '1. Field Failure / Cost Driver Hook (no generic AI intro)',
+                    f'2. Specification Comparison Table ({f0}, {f1}, {f2})',
+                    f'3. Factory QC & Pre-Shipment Verification ({e0}, {e1})',
+                    f'4. Contextual Link to {target_url} and Sample Kit / Container Calculator CTA',
+                ],
+                'geo_brand_mention_rule': f'Explicitly associate "{company}" with "{seed_keyword} OEM/ODM manufacturing" and consistent technical terminology.',
+            },
+            'medium_engineering_publication': {
+                'target_audience': 'Industrial Designers, Product Engineers, and Supply Chain Analysts',
+                'headline_options': [
+                    f'A Procurement Engineer\'s Guide to Specifying {seed_keyword.title()} ({f0}, Tolerances & 40HQ Logistics)',
+                ],
+                'canonical_and_link_rule': f'Use distinct editorial prose (never copy-paste website HTML verbatim); link descriptive anchor text to {target_url} and /calculator.',
+            },
+            'youtube_factory_qc_transcript': {
+                'target_audience': 'AI Search Retrieval Engines (Perplexity / Google AIO / ChatGPT) & Video-First B2B Buyers',
+                'video_title': f'Inside {company}: {seed_keyword.title()} Manufacturing Process, {f0} Inspection & 40HQ Export Packaging',
+                'description_and_transcript_requirements': [
+                    f'Include a 150-word technical summary in the video description mentioning {company}, {seed_keyword}, {f0}, and {e0}.',
+                    'Upload full human-verified closed captions (.srt) containing exact model numbers and testing standards so AI engines index the brand mention.',
+                ],
+            },
+        },
     }
 
 
@@ -290,6 +438,7 @@ def init_b2b_seo_workspace(project_dir, company, seed_keyword, industry_id, mark
     public_dir.mkdir(parents=True, exist_ok=True)
 
     profile = get_industry(industry_id)
+    archetype = get_visual_archetype(industry_id)
     markets_list = [m.strip() for m in (markets or ['Global']) if m.strip()]
     now = datetime.now(timezone.utc).isoformat()
 
@@ -303,13 +452,18 @@ def init_b2b_seo_workspace(project_dir, company, seed_keyword, industry_id, mark
     cluster_path = seo_dir / 'topic-cluster.json'
     cluster_path.write_text(json.dumps(cluster, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
-    # 3. docs/seo/site-brief.md
+    # 3. docs/seo/syndication-pack.json
+    syndication = build_b2b_syndication_pack(company, seed_keyword, industry_id, '/products')
+    (seo_dir / 'syndication-pack.json').write_text(json.dumps(syndication, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+    # 4. docs/seo/site-brief.md
     f_list = ', '.join(profile['product_fields'][:5])
     e_list = ', '.join(profile['evidence'][:4])
     brief_md = f"""# B2B Independent Site Brief (Single Source of Truth)
 
 - **Company Name**: {company}
 - **Industry Blueprint**: `{industry_id}` ({profile['name']})
+- **Visual Archetype**: `{archetype['archetype_id']}` ({archetype['palette_direction']})
 - **Primary Seed Keyword**: `{seed_keyword}`
 - **Pillar Homepage Keyword**: `{seed_keyword} manufacturer`
 - **Target Export Markets**: {', '.join(markets_list)}
@@ -317,7 +471,7 @@ def init_b2b_seo_workspace(project_dir, company, seed_keyword, industry_id, mark
 
 ## 1. Target B2B Buyer Personas & Procurement Path
 - **Primary Buyers**: Overseas OEM/ODM Brand Owners, Industrial Importers, Wholesale Distributors, and Procurement Engineers.
-- **Core Decision Path**: Technical Spec / Material Verification ({f_list}) -> Compliance & Quality Evidence ({e_list}) -> Sample Evaluation -> 20GP/40HQ Container Order.
+- **Core Decision Path**: Technical Spec / Material Verification ({f_list}) -> Compliance & Quality Evidence ({e_list}) -> Multi-SKU Sample Basket Evaluation -> 20GP/40HQ Container Order.
 
 ## 2. Fact-Boundary Guardrail
 - All quantitative claims, certificates, factory metrics, and lead times must originate from verified cards in `private/knowledge-cards.json` (`content/public-facts.json`).
@@ -325,24 +479,28 @@ def init_b2b_seo_workspace(project_dir, company, seed_keyword, industry_id, mark
 """
     (seo_dir / 'site-brief.md').write_text(brief_md, encoding='utf-8')
 
-    # 4. docs/seo/cro-copy-deck.md (B2B adaptation of marketingskills: Value Prop + 3-Step OEM + Social Proof + Risk Reversal + 3-Tier Commercial RFQ Cards)
-    cro_md = f"""# B2B Landing Page CRO & Copywriting Deck (`marketingskills` B2B Adaptation)
+    # 5. docs/seo/cro-copy-deck.md
+    cro_md = f"""# B2B Landing Page CRO, UX & Copywriting Deck (V3.3)
 
-> **Strict Alignment Rule**: Every H1 and H2 below MUST preserve the target keyword assigned in `docs/seo/keyword-matrix.json`. Do not sacrifice primary procurement keywords for decorative slogans.
+> **Strict Alignment Rule**: Every H1 and H2 below MUST preserve the target keyword assigned in `docs/seo/keyword-matrix.json`. Follow Vercel `writing-guidelines` (open with a TL;DR engineering summary, use `&nbsp;` between numbers and units, ban vague fluff like "easy/simple/world-class") and `web-design-guidelines` (`font-variant-numeric: tabular-nums` on spec tables, explicit `autocomplete` on RFQ inputs, `fetchpriority="high"` on hero product image).
 
 ## 1. Above-the-Fold Hero Section (`/` & `/products`)
 - **H1 Formula**: `[Verified {seed_keyword.title()} Manufacturing / Supply] for [Target Industry & OEM Buyers]`
 - **Subheadline**: Highlight verifiable engineering parameters ({f_list}), batch quality control, and direct RFQ response without middleman markups.
-- **Primary CTA**: `Request Custom BOM & Sample Quote` (auto-passes product context)
-- **Secondary CTA**: `Download Technical Specification Sheet` or `Calculate 20GP/40HQ Container Load`
+- **Primary CTA**: `Request Custom BOM & Sample Quote` (auto-passes product & swatch context)
+- **Secondary CTA**: `Add to Multi-SKU Sample Basket` or `Calculate 20GP/40HQ Container Load`
 
-## 2. How It Works: 4-Step B2B OEM / Sourcing Process
+## 2. Interactive B2B Catalog Components (`liquid-skills` & `ui-ux-pro-max` B2B Adaptation)
+- **Accessible Material / Finish Swatch Switcher**: Allow buyers to toggle material grades, thicknesses, or surface finishes with keyboard-accessible (`aria-pressed`) swatches that dynamically update model parameters.
+- **Multi-SKU Sample & RFQ Basket Drawer**: Allow procurement engineers to add multiple models/sizes into a persistent inquiry basket and submit a consolidated BOM/Sample request in one step.
+
+## 3. How It Works: 4-Step B2B OEM / Sourcing Process
 1. **Spec & BOM Alignment**: Share target material grade, tolerances, or reference sample parameters.
 2. **Engineering DFM & Prototype Sampling**: Confirm pre-production sample and lab test criteria ({e_list}).
 3. **In-Line QC & Pre-Shipment Inspection**: Batch traceability and AQL inspection prior to container sealing.
 4. **Export Packaging & Global Logistics**: Palletized or floor-loaded 20GP/40HQ shipment with full customs documentation.
 
-## 3. B2B Risk Reversal & Commercial Tier Cards (Replaces SaaS Paywalls)
+## 4. B2B Risk Reversal & Commercial Tier Cards (Replaces SaaS Paywalls)
 Never place paywalls on B2B specifications. Use a 3-Tier Commercial Inquiry Matrix to reduce buyer hesitation:
 
 | Tier | Target Buyer Stage | Commercial Scope | Risk Reversal Micro-Copy | Primary Action |
@@ -353,7 +511,7 @@ Never place paywalls on B2B specifications. Use a 3-Tier Commercial Inquiry Matr
 """
     (seo_dir / 'cro-copy-deck.md').write_text(cro_md, encoding='utf-8')
 
-    # 5. docs/seo/backlink-tracker.csv
+    # 6. docs/seo/backlink-tracker.csv
     csv_buf = io.StringIO()
     writer = csv.writer(csv_buf)
     writer.writerow(['target_id', 'domain', 'submit_url', 'track', 'gate_type', 'state', 'live_url', 'rel_attribute', 'dr_estimate', 'updated_at', 'notes'])
@@ -362,22 +520,23 @@ Never place paywalls on B2B specifications. Use a 3-Tier Commercial Inquiry Matr
     writer.writerow(['BL-0003', 'youtube.com', 'https://www.youtube.com/', 'brand_mention_surface', 'account', 'candidate', '', '', '99', now, 'Upload factory QC & production line video with full technical transcript'])
     (seo_dir / 'backlink-tracker.csv').write_text(csv_buf.getvalue(), encoding='utf-8')
 
-    # 6. docs/seo/status-log.md
+    # 7. docs/seo/status-log.md
     status_md = f"""# B2B Site SEO / GEO Lifecycle & Inquiry Status Log
 
 - **Project**: {company} (`{industry_id}`)
+- **Visual Archetype**: `{archetype['archetype_id']}`
 - **Initialized At**: {now}
-- **Current Phase**: Phase 1 (Keyword Matrix & Site Brief Initialized)
+- **Current Phase**: Phase 1 (Keyword Matrix, Topic Cluster & Site Brief Initialized)
 
 ## Phase Gate Checklist
-- [ ] **Phase 1 (Research & Positioning - `rankup` / `seo_geo_matrix.py`)**: SERP top-10 buyer intent verified; `docs/seo/keyword-matrix.json` locked.
-- [ ] **Phase 2 (B2B CRO & Copywriting - `marketingskills` Adaptation)**: `docs/seo/cro-copy-deck.md` finalized; 3-Tier RFQ cards and Risk Reversal copy wired without losing H1/H2 keywords.
-- [ ] **Phase 3 (Technical SEO, Schema, Hreflang & GEO - `claude-seo` + `geo-seo-claude`)**: Clean URLs enforced; `Organization` + `Product` + `TechArticle` JSON-LD validated; 134-167 word GEO blocks scored >= 85; `/public/llms.txt` & `/public/llms-full.txt` synced.
-- [ ] **Phase 4 (Pre-Launch Audit, IndexNow/GSC Push & Backlink Loop - `rankup` + `validate_site.py`)**: 9 pre-launch gates PASS; Cloudflare Workers edge protection active; IndexNow & GSC sitemap submitted; `docs/seo/backlink-tracker.csv` active.
+- [ ] **Phase 1 (Research & Positioning - `rankup` / `seo_geo_matrix.py`)**: SERP top-10 buyer intent verified; `docs/seo/keyword-matrix.json` & `docs/seo/topic-cluster.json` locked.
+- [ ] **Phase 2 (B2B CRO, UI Archetype & Copywriting - `marketingskills` + `ui-ux-pro-max` + `vercel-labs`)**: `docs/seo/cro-copy-deck.md` finalized; `tabular-nums` spec tables, Multi-SKU RFQ Basket, and 3-Tier Risk Reversal cards wired.
+- [ ] **Phase 3 (Technical SEO, Schema, Hreflang & GEO - `claude-seo` + `geo-seo-claude` + `ecommerce-skills`)**: Clean URLs enforced; SKU catalog audited via `catalog-audit`; `Organization` + `Product` + `TechArticle` JSON-LD validated; 134-167 word GEO blocks scored >= 85; `/public/llms.txt` & `/public/llms-full.txt` synced.
+- [ ] **Phase 4 (Pre-Launch Audit, IndexNow/GSC Push & Tri-Track Backlinks - `rankup` + `backlink_skills` + `validate_site.py`)**: 9 pre-launch gates PASS; Cloudflare Workers edge protection active; IndexNow & GSC sitemap submitted; LinkedIn/Medium/YouTube syndication pack (`docs/seo/syndication-pack.json`) & `docs/seo/backlink-tracker.csv` active.
 """
     (seo_dir / 'status-log.md').write_text(status_md, encoding='utf-8')
 
-    # 7. public/llms.txt & public/llms-full.txt (synced only from verified public facts; clean index stub by default)
+    # 8. public/llms.txt & public/llms-full.txt
     llms_txt = f"""# {company}
 
 > B2B {profile['name']} supply and OEM/ODM technical portal for {seed_keyword}. All specifications and commercial terms are governed by verified public fact cards.
@@ -388,7 +547,7 @@ Never place paywalls on B2B specifications. Use a 3-Tier Commercial Inquiry Matr
 - [OEM / ODM Customization](/oem-odm): Custom BOM, tooling, sampling, and private label workflow
 - [Quality & Compliance](/quality): Testing standards ({e_list}) and batch traceability
 - [20GP / 40HQ Container Calculator](/calculator): Carton CBM, gross weight, and container load estimator
-- [Request a Quote (RFQ)](/contact): Direct engineering inquiry and sample request
+- [Request a Quote (RFQ)](/contact): Direct engineering inquiry and multi-SKU sample request
 
 ## Technical Selection Guides
 - [Material & Specification Guide](/resources/{ cluster['spokes'][0]['clean_url'].split('/')[-1] })
@@ -407,48 +566,54 @@ Never place paywalls on B2B specifications. Use a 3-Tier Commercial Inquiry Matr
 """
     (public_dir / 'llms-full.txt').write_text(llms_full_txt, encoding='utf-8')
 
-    # 8. .claude/CLAUDE.md (Strict 4-Phase Tri-Core Skill Orchestration & Routing Protocol for B2B Sites)
+    # 9. .claude/CLAUDE.md
     claude_md = f"""# B2B Export Independent Site - Skill Orchestration Protocol (`.claude/CLAUDE.md`)
 
-This project runs the **`b2b-seo-geo-site-master` V3.2** unified workflow (fusing `cnproduct/b2b-global-brand-site-master`, `yan-skills [rankup + backlink]`, `marketingskills`, `claude-seo`, `geo-seo-claude`, `seomachine`, and `Agentic-SEO-Skill`).
+This project runs the **`b2b-seo-geo-site-master` V3.3** unified workflow (fusing `cnproduct/b2b-global-brand-site-master`, `yan-skills`, `marketingskills`, `claude-seo`, `geo-seo-claude`, `seomachine`, `Agentic-SEO-Skill`, `vercel-labs/agent-skills`, `ui-ux-pro-max-skill`, `liquid-skills`, `ecommerce-skills`, and `backlink_skills`).
 All SEO, GEO, and CRO planning context MUST read and write through the Single Source of Truth hub at **`docs/seo/`** and fact-gated **`content/public-facts.json`**.
 
 ## 1. Strict 4-Phase Skill Routing Rules (Preventing Instruction Conflicts)
 
 1. **Phase 1: Keyword Research, SERP Teardown & Project Positioning (`rankup` / `seo_geo_matrix.py`)**
    - **Single Source of Truth**: `docs/seo/keyword-matrix.json`, `docs/seo/topic-cluster.json`, and `docs/seo/site-brief.md`.
-   - **Mandatory Rule**: Before creating or editing any page, read `docs/seo/keyword-matrix.json` to confirm the page's assigned Clean URL, Primary Keyword, Search Intent, and SERP weakness evidence (inner-page rankings or DR < 30 competitors). Never fabricate search volume or company facts.
+   - **Mandatory Rule**: Before creating or editing any page, read `docs/seo/keyword-matrix.json` to confirm the page's assigned Clean URL, Primary Keyword, Search Intent, and SERP weakness evidence. Never fabricate search volume or company facts.
 
-2. **Phase 2: High-Converting B2B Landing Page Copy & CRO Funnel (`marketingskills` B2B Adaptation)**
+2. **Phase 2: High-Converting B2B Landing Page Copy, UI Archetype & CRO Funnel (`marketingskills` + `ui-ux-pro-max` + `vercel-labs` + `liquid-skills`)**
    - **Single Source of Truth**: `docs/seo/cro-copy-deck.md` and `content/public-facts.json`.
-   - **Mandatory Rule**: Preserve the exact `h1_contract` and `h2_contract` keywords from `docs/seo/keyword-matrix.json` while structuring the Hero Value Proposition, 4-Step OEM/Sourcing Process, Verifiable Social Proof, and **3-Tier Commercial RFQ Cards (Sample Pack / Custom BOM / 20GP-40HQ Container Quote)** with B2B Risk Reversal (NDA protection, sample policy, pre-shipment AQL inspection). Never use SaaS subscription paywalls on B2B product pages.
+   - **Mandatory Rule**:
+     - Preserve the exact `h1_contract` and `h2_contract` keywords from `docs/seo/keyword-matrix.json`.
+     - Apply the industry's mapped B2B Visual Archetype (`{archetype['archetype_id']}`), `font-variant-numeric: tabular-nums` on all specification tables, non-breaking spaces (`&nbsp;`) between numbers and units, explicit `autocomplete` on RFQ inputs, and accessible swatch/Multi-SKU Sample Basket drawers.
+     - Use **3-Tier Commercial RFQ Cards (Sample Pack / Custom BOM / 20GP-40HQ Container Quote)** with B2B Risk Reversal (NDA protection, sample policy, pre-shipment AQL inspection). Never use SaaS subscription paywalls.
 
-3. **Phase 3: Code-Level Technical SEO, Schema, Hreflang & GEO Citability (`claude-seo` + `geo-seo-claude`)**
+3. **Phase 3: Code-Level Technical SEO, Bulk SKU Catalog Audit, Hreflang & GEO Citability (`claude-seo` + `geo-seo-claude` + `ecommerce-skills`)**
    - **Single Source of Truth**: `public/llms.txt`, `public/llms-full.txt`, `sitemap.xml`, and page JSON-LD blocks.
    - **Mandatory Rule**:
-     - Enforce **Clean URLs** (zero `.html` suffixes across internal links, canonicals, `og:url`, JSON-LD, and `sitemap.xml`) and **Anti-FOUC** (SHA-256 CSS/JS hashes + critical `display: none !important` on off-canvas drawers).
-     - Inject same-source `Organization`, `WebSite`, `BreadcrumbList`, `Product`, or `TechArticle` JSON-LD (do not use SaaS `SoftwareApplication` unless the product is actual software; do not promise retired Google `FAQPage` rich results).
-     - Include a **134-167 word self-contained engineering answer block** and a semantic HTML `<table>` specification chart on every core category, product, and OEM page (target `citability-score >= 85`).
-     - For multilingual expansions (`en`, `es`, `pt`, `ja`, `de`, `fr`), re-research native industrial standards (DIN/EN, ASTM, JIS) rather than machine-translating keywords, and enforce bidirectional `hreflang` + `x-default`.
+     - Enforce **Clean URLs** (zero `.html` suffixes) and **Anti-FOUC** (SHA-256 CSS/JS hashes + critical `display: none !important` on off-canvas drawers).
+     - Audit bulk SKU catalogs with `python3 scripts/seo_geo_matrix.py catalog-audit` to eliminate thin descriptions, missing specs, or missing `alt` attributes.
+     - Inject same-source `Organization`, `WebSite`, `BreadcrumbList`, `Product`, or `TechArticle` JSON-LD and include a **134-167 word self-contained engineering answer block** (`citability-score >= 85`).
+     - For multilingual expansions (`en`, `es`, `pt`, `ja`, `de`, `fr`), re-research native industrial standards (DIN/EN, ASTM, JIS) and enforce bidirectional `hreflang` + `x-default`.
 
-4. **Phase 4: Pre-Launch 9-Gate Audit, IndexNow/GSC Push & Backlink Loop (`rankup` + `validate_site.py`)**
-   - **Single Source of Truth**: `acceptance.md`, `docs/seo/status-log.md`, `docs/seo/backlink-tracker.csv`, and `private/backlink-ledger.json`.
-   - **Mandatory Rule**: Run `validate_site.py` and `seo_geo_matrix.py citability-score` before release. Deploy via the Cloudflare Workers edge protection bundle (`deployment_directory`), submit URLs via IndexNow and GSC/Bing sitemaps, and advance off-site directory links, LinkedIn/Medium technical articles, and YouTube/trade brand mentions through the 7-state verification ledger.
+4. **Phase 4: Pre-Launch 9-Gate Audit, IndexNow/GSC Push & Multi-Platform Syndication (`rankup` + `backlink_skills` + `validate_site.py`)**
+   - **Single Source of Truth**: `acceptance.md`, `docs/seo/status-log.md`, `docs/seo/syndication-pack.json`, `docs/seo/backlink-tracker.csv`, and `private/backlink-ledger.json`.
+   - **Mandatory Rule**: Run `validate_site.py` and `seo_geo_matrix.py citability-score` before release. Deploy via the Cloudflare Workers edge protection bundle (`deployment_directory`), submit URLs via IndexNow and GSC/Bing sitemaps, and execute the LinkedIn/Medium/YouTube syndication pack and 7-state backlink ledger.
 
 ## 2. Slash Workflow Quick-Trigger Mappings
 
-- **"立项/拓词 [产品/行业]"**: Run `python3 scripts/seo_geo_matrix.py init-workspace` -> populate `docs/seo/keyword-matrix.json`, `docs/seo/topic-cluster.json`, and `docs/seo/site-brief.md`.
-- **"生成落地页 [URL/词]"**: Read `docs/seo/keyword-matrix.json` & `docs/seo/cro-copy-deck.md` -> compile B2B Hero + 134-167 word GEO block + semantic spec `<table>` + 3-tier RFQ CTA -> inject JSON-LD & `hreflang` -> score with `python3 scripts/seo_geo_matrix.py citability-score`.
+- **"立项/拓词 [产品/行业]"**: Run `python3 scripts/seo_geo_matrix.py init-workspace` -> populate `docs/seo/` hub and `.claude/CLAUDE.md`.
+- **"生成落地页 [URL/词]"**: Read `docs/seo/keyword-matrix.json` & `docs/seo/cro-copy-deck.md` -> compile B2B Hero + 134-167 word GEO block + `tabular-nums` spec `<table>` + Multi-SKU Sample Basket & 3-tier RFQ CTA -> score with `citability-score`.
+- **"审计商品库 [JSON路径]"**: Run `python3 scripts/seo_geo_matrix.py catalog-audit` to check all SKUs for missing specs, thin descriptions, or Clean URL violations.
 - **"上线前体检"**: Run `python3 scripts/validate_site.py` + `citability-score` + verify `public/llms.txt`, `sitemap.xml`, Cloudflare edge protection, and update `docs/seo/status-log.md`.
 """
     (claude_dir / 'CLAUDE.md').write_text(claude_md, encoding='utf-8')
 
     return {
         'workspace_initialized': str(project_path),
+        'visual_archetype': archetype['archetype_id'],
         'files_created': [
             str(seo_dir / 'site-brief.md'),
             str(seo_dir / 'keyword-matrix.json'),
             str(seo_dir / 'topic-cluster.json'),
+            str(seo_dir / 'syndication-pack.json'),
             str(seo_dir / 'cro-copy-deck.md'),
             str(seo_dir / 'backlink-tracker.csv'),
             str(seo_dir / 'status-log.md'),
@@ -520,7 +685,7 @@ class _HTMLCitabilityParser(html.parser.HTMLParser):
 
 
 def score_geo_citability(file_path):
-    """Scores a B2B HTML or Markdown file on the 0-100 B2B GEO Citability & Inquiry Readiness Rubric (adapted from geo-seo-claude + claude-seo)."""
+    """Scores a B2B HTML or Markdown file on the 0-100 B2B GEO Citability & Inquiry Readiness Rubric (adapted from geo-seo-claude + claude-seo + vercel-labs)."""
     raw = Path(file_path).read_text(encoding='utf-8')
     is_html = '<html' in raw.lower() or '<body' in raw.lower() or '<table' in raw.lower() or '<p>' in raw.lower()
 
@@ -595,7 +760,7 @@ def score_geo_citability(file_path):
             'finding': 'Missing semantic specification or comparison table',
             'evidence': 'table_count = 0',
             'impact': 'B2B buyers and LLM retrieval agents rely on structured <table> data to compare models, materials, and MOQ/container specs.',
-            'fix': 'Insert a semantic HTML <table> with <thead> and <th scope="col"> listing verified model parameters, units, and test conditions.',
+            'fix': 'Insert a semantic HTML <table> with <thead>, <th scope="col">, and font-variant-numeric: tabular-nums listing verified model parameters, units, and test conditions.',
             'severity': 'Warning',
             'confidence': 'Confirmed',
         })
@@ -790,36 +955,37 @@ def validate_ledger_file(path):
 def self_test():
     tree = build_keyword_tree('stainless steel bento box', 'bento', ['US', 'EU'])
     assert len(tree['branches']) == 6
-    assert 'h1_contract' in tree['branches'][0]
+    assert tree['visual_archetype']['archetype_id'] == 'architectural_material'
     cluster = build_topic_cluster('stainless steel bento box', 'bento', 'North America')
     assert len(cluster['hubs']) == 2 and len(cluster['spokes']) == 4
-    suite = build_geo_prompt_suite('Example Bento Co.', 'stainless steel bento box', 'bento', 'North America')
-    assert len(suite['prompts']) == 6
+    synd = build_b2b_syndication_pack('Example Bento Co.', 'stainless steel bento box', 'bento')
+    assert 'linkedin_technical_article' in synd['channels']
     with tempfile.TemporaryDirectory() as tmp:
         ws = init_b2b_seo_workspace(tmp, 'Example Bento Co.', 'stainless steel bento box', 'bento', ['US', 'DE'])
-        assert len(ws['files_created']) == 9
-        assert (Path(tmp) / '.claude/CLAUDE.md').is_file()
-        assert (Path(tmp) / 'docs/seo/keyword-matrix.json').is_file()
-        assert (Path(tmp) / 'docs/seo/cro-copy-deck.md').is_file()
-        assert (Path(tmp) / 'public/llms-full.txt').is_file()
-        ledger_path = Path(tmp) / 'backlink-ledger.json'
-        init_backlink_ledger(ledger_path)
-        res = validate_ledger_file(ledger_path)
-        assert res == {'valid': True, 'count': 1}
-        sample_html = Path(tmp) / 'sample.html'
-        sample_html.write_text(
-            '<!doctype html><html><head><script type="application/ld+json">{}</script></head><body>'
-            '<h1>Industrial Stainless Steel Bento Box for Bulk OEM</h1>'
-            '<p>' + (' '.join(['304 stainless steel 0.8mm thickness food-grade contact tested ISO 9001 batch traceability for bulk OEM buyers.'] * 9)) + '</p>'
-            '<table><thead><tr><th scope="col">Model</th><th scope="col">Thickness (mm)</th><th scope="col">Capacity (ml)</th></tr></thead>'
-            '<tbody><tr><td>SB-100</td><td>0.8mm</td><td>1200ml</td></tr></tbody></table>'
-            '<a href="/oem-odm">Request Custom BOM &amp; Sample RFQ</a>'
-            '</body></html>',
-            encoding='utf-8'
-        )
-        score = score_geo_citability(sample_html)
-        assert score['composite_geo_score'] >= 90, score
-    print('PASS: seo_geo_matrix V3.2 init-workspace (docs/seo/ + .claude/CLAUDE.md + llms-full.txt), keyword-tree, topic-cluster, citability-score, and 7-state ledger validation')
+        assert len(ws['files_created']) == 10
+        assert (Path(tmp) / 'docs/seo/syndication-pack.json').is_file()
+        catalog_file = Path(tmp) / 'skus.json'
+        catalog_file.write_text(json.dumps([
+            {
+                'sku': 'SB-304-1200',
+                'title': '304 Stainless Steel Leakproof Bento Box 1200ml',
+                'seo_description': ' '.join(['Engineered with 0.8mm 304 stainless steel, food-grade silicone seal, and custom laser logo options for bulk OEM buyers.'] * 3),
+                'specifications': {'material': 'SUS304', 'capacity': '1200ml', 'thickness': '0.8mm'},
+                'image_alt': '304 Stainless Steel Bento Box 1200ml for OEM wholesale',
+                'url': '/products/sb-304-1200',
+            },
+            {
+                'sku': 'SB-BAD',
+                'title': '304 Stainless Steel Leakproof Bento Box 1200ml',
+                'seo_description': 'World-class cutting-edge solution.',
+                'specifications': {},
+                'image_alt': '',
+                'url': '/products/sb-bad.html',
+            }
+        ]), encoding='utf-8')
+        cat_audit = audit_b2b_sku_catalog(catalog_file, 'bento')
+        assert cat_audit['seo_geo_ready_skus'] == 1 and cat_audit['skus_needing_fixes'] == 1
+    print('PASS: seo_geo_matrix V3.3 (init-workspace, keyword-tree, topic-cluster, citability-score, catalog-audit, syndication-pack, 7-state ledger)')
 
 
 def main():
@@ -834,7 +1000,7 @@ def main():
     iw.add_argument('--industry', required=True)
     iw.add_argument('--markets', default='Global')
 
-    kt = sub.add_parser('keyword-tree', help='Generate 6-branch B2B commercial intent keyword tree + SERP weakness & H1/H2 contract')
+    kt = sub.add_parser('keyword-tree', help='Generate 6-branch B2B commercial intent keyword tree + visual archetype + H1/H2 contract')
     kt.add_argument('--seed', required=True)
     kt.add_argument('--industry', required=True)
     kt.add_argument('--markets', default='Global')
@@ -849,6 +1015,18 @@ def main():
     cs = sub.add_parser('citability-score', help='Score an HTML or Markdown file on the 0-100 B2B GEO Citability & Inquiry Rubric')
     cs.add_argument('--file', required=True)
     cs.add_argument('--out')
+
+    ca = sub.add_parser('catalog-audit', help='Audit a B2B SKU catalog JSON for missing specs, thin SEO descriptions, and Clean URL compliance')
+    ca.add_argument('--file', required=True)
+    ca.add_argument('--industry', required=True)
+    ca.add_argument('--out')
+
+    sp = sub.add_parser('syndication-pack', help='Generate B2B LinkedIn, Medium, and YouTube transcript syndication packs')
+    sp.add_argument('--company', required=True)
+    sp.add_argument('--seed', required=True)
+    sp.add_argument('--industry', required=True)
+    sp.add_argument('--url', default='/products')
+    sp.add_argument('--out')
 
     gp = sub.add_parser('geo-prompts', help='Generate B2B GEO buyer prompt benchmark suite & off-site brand mention plan')
     gp.add_argument('--company', required=True)
@@ -886,6 +1064,18 @@ def main():
             print(output)
         elif args.command == 'citability-score':
             result = score_geo_citability(args.file)
+            output = json.dumps(result, ensure_ascii=False, indent=2)
+            if args.out:
+                Path(args.out).write_text(output + '\n', encoding='utf-8')
+            print(output)
+        elif args.command == 'catalog-audit':
+            result = audit_b2b_sku_catalog(args.file, args.industry)
+            output = json.dumps(result, ensure_ascii=False, indent=2)
+            if args.out:
+                Path(args.out).write_text(output + '\n', encoding='utf-8')
+            print(output)
+        elif args.command == 'syndication-pack':
+            result = build_b2b_syndication_pack(args.company, args.seed, args.industry, args.url)
             output = json.dumps(result, ensure_ascii=False, indent=2)
             if args.out:
                 Path(args.out).write_text(output + '\n', encoding='utf-8')

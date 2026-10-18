@@ -1,7 +1,7 @@
 {
   "name": "b2b-seo-geo-site-master",
-  "version": "3.2.0",
-  "description": "面向海外询盘获取（RFQ）的 B2B 独立站 SEO + GEO 全链路建站与增长总控（十大技能 + 四阶段 docs/seo/ 唯一事实源中枢版）：涵盖 21 行业采购蓝图、21 模块事实底座、商业词根矩阵与 SERP 弱点核验、Hub-and-Spoke 主题聚类、B2B 风险逆转与三级询盘卡、134-167 词 GEO 可引用评分、llms.txt/llms-full.txt、7 态外链/品牌提及台账与默认 Cloudflare 边缘防护。",
+  "version": "3.3.0",
+  "description": "面向海外询盘获取（RFQ）的 B2B 独立站 SEO + GEO 全链路建站与增长总控（13大技能 + 四阶段 docs/seo/ 唯一事实源中枢版）：涵盖 21 行业采购蓝图、4 大工业视觉原型、21 模块事实底座、商业词根矩阵、Hub-and-Spoke 主题聚类、SKU 目录批量审计、多 SKU 样品询盘篮、134-167 词 GEO 可引用评分、LinkedIn/Medium/YouTube 多平台分发包与 7 态外链台账。",
   "author": "cnproduct",
   "license": "MIT",
   "entry": "scripts/orchestrator.py",
@@ -15,5 +15,5 @@
     "design_math.py",
     "rfq_daemon.py"
   ],
-  "standards_checked_at": "2026-10-16"
+  "standards_checked_at": "2026-10-18"
 }
