@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """Create suggested brand colors and CSS; does not certify site accessibility."""
 import argparse
 import json
